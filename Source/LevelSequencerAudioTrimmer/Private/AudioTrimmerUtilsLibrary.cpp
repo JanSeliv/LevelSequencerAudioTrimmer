@@ -1,0 +1,233 @@
+﻿// Copyright (c) Yevhenii Selivanov
+
+#include "AudioTrimmerUtilsLibrary.h"
+//---
+#include "AssetExportTask.h"
+#include "AssetToolsModule.h"
+#include "LevelSequence.h"
+#include "MovieScene.h"
+#include "MovieSceneTrack.h"
+#include "ObjectTools.h"
+#include "Exporters/Exporter.h"
+#include "Factories/ReimportSoundFactory.h"
+#include "HAL/FileManager.h"
+#include "Misc/FileHelper.h"
+#include "Sections/MovieSceneAudioSection.h"
+#include "Sections/MovieSceneSubSection.h"
+#include "Sound/SampleBufferIO.h"
+#include "Sound/SoundWave.h"
+#include "Tests/AutomationEditorCommon.h"
+#include "Tracks/MovieSceneAudioTrack.h"
+#include "Tracks/MovieSceneSubTrack.h"
+//---
+#include UE_INLINE_GENERATED_CPP_BY_NAME(AudioTrimmerUtilsLibrary)
+
+// Retrieves all audio sections from the given level sequence
+TArray<UMovieSceneAudioSection*> UAudioTrimmerUtilsLibrary::GetAudioSections(ULevelSequence* LevelSequence)
+{
+	TArray<UMovieSceneAudioSection*> AudioSections;
+
+	// Stack to handle traversal of sequences and subsequences
+	TArray<ULevelSequence*> SequenceStack;
+	SequenceStack.Push(LevelSequence);
+
+	while (SequenceStack.Num() > 0)
+	{
+		const ULevelSequence* CurrentSequence = SequenceStack.Pop();
+
+		for (UMovieSceneTrack* Track : CurrentSequence->GetMovieScene()->GetTracks())
+		{
+			if (const UMovieSceneAudioTrack* AudioTrack = Cast<UMovieSceneAudioTrack>(Track))
+			{
+				for (UMovieSceneSection* Section : AudioTrack->GetAllSections())
+				{
+					if (UMovieSceneAudioSection* AudioSection = Cast<UMovieSceneAudioSection>(Section))
+					{
+						AudioSections.Add(AudioSection);
+					}
+				}
+			}
+			else if (const UMovieSceneSubTrack* SubTrack = Cast<UMovieSceneSubTrack>(Track))
+			{
+				for (UMovieSceneSection* Section : SubTrack->GetAllSections())
+				{
+					if (const UMovieSceneSubSection* SubSection = Cast<UMovieSceneSubSection>(Section))
+					{
+						ULevelSequence* SubSequence = Cast<ULevelSequence>(SubSection->GetSequence());
+						if (SubSequence)
+						{
+							SequenceStack.Push(SubSequence);
+						}
+					}
+				}
+			}
+		}
+	}
+
+	return AudioSections;
+}
+
+//Calculates the start and end times in milliseconds for trimming an audio section
+void UAudioTrimmerUtilsLibrary::CalculateTrimTimes(ULevelSequence* LevelSequence, UMovieSceneAudioSection* AudioSection, int32& StartTimeMs, int32& EndTimeMs)
+{
+	if (!LevelSequence || !AudioSection)
+	{
+		UE_LOG(LogAudioTrimmer, Warning, TEXT("Invalid LevelSequence or AudioSection."));
+		return;
+	}
+
+	const FFrameRate TickResolution = LevelSequence->GetMovieScene()->GetTickResolution();
+
+	// Get the audio start offset in frames (relative to the audio asset)
+	const int32 AudioStartOffsetFrames = AudioSection->GetStartOffset().Value;
+	const float AudioStartOffsetSeconds = AudioStartOffsetFrames / TickResolution.AsDecimal();
+
+	// Get the duration of the section on the track (in frames)
+	const int32 SectionDurationFrames = (AudioSection->GetExclusiveEndFrame() - AudioSection->GetInclusiveStartFrame()).Value;
+	const float SectionDurationSeconds = SectionDurationFrames / TickResolution.AsDecimal();
+
+	// Calculate the effective end time within the audio asset
+	float AudioEndSeconds = AudioStartOffsetSeconds + SectionDurationSeconds;
+
+	if (const USoundWave* SoundWave = Cast<USoundWave>(AudioSection->GetSound()))
+	{
+		// Total duration of the audio in seconds
+		const float TotalAudioDurationSeconds = SoundWave->Duration;
+
+		// Adjust the end time if it exceeds the total length of the audio
+		if (AudioEndSeconds > TotalAudioDurationSeconds)
+		{
+			AudioEndSeconds = TotalAudioDurationSeconds;
+		}
+
+		// Calculate the start and end times in milliseconds
+		StartTimeMs = static_cast<int32>(AudioStartOffsetSeconds * 1000.0f);
+		EndTimeMs = static_cast<int32>(AudioEndSeconds * 1000.0f);
+
+		// Calculate the percentage of the audio that is used
+		const float UsedPercentage = ((AudioEndSeconds - AudioStartOffsetSeconds) / TotalAudioDurationSeconds) * 100.0f;
+
+		// Log the start and end times in milliseconds, section duration, and percentage used
+		UE_LOG(LogAudioTrimmer, Log, TEXT("Audio: %s, Used from %.2f seconds to %.2f seconds (Duration: %.2f seconds), Percentage Used: %.2f%%"),
+		       *SoundWave->GetName(), AudioStartOffsetSeconds, AudioEndSeconds, AudioEndSeconds - AudioStartOffsetSeconds, UsedPercentage);
+	}
+	else
+	{
+		UE_LOG(LogAudioTrimmer, Warning, TEXT("SoundWave is null or invalid."));
+	}
+}
+
+// Exports a sound wave to a WAV file
+FString UAudioTrimmerUtilsLibrary::ExportSoundWaveToWav(USoundWave* SoundWave)
+{
+	if (!SoundWave)
+	{
+		UE_LOG(LogAudioTrimmer, Warning, TEXT("Invalid SoundWave asset."));
+		return FString();
+	}
+
+	// Get the directory where the original sound wave is stored
+	const FString AssetPath = SoundWave->GetPathName();
+	const FString PackagePath = FPackageName::ObjectPathToPackageName(AssetPath);
+	FString Directory = FPaths::GetPath(PackagePath);
+
+	// Construct the full export path
+	FString FileName = SoundWave->GetName() + TEXT(".wav");
+	FString ExportPath = FPaths::Combine(FPaths::ProjectContentDir(), Directory, FileName);
+
+	// Export the sound wave to the WAV file
+	UAssetExportTask* ExportTask = NewObject<UAssetExportTask>();
+	ExportTask->Object = SoundWave;
+	ExportTask->Exporter = UExporter::FindExporter(SoundWave, TEXT("wav"));
+	ExportTask->Filename = ExportPath;
+	ExportTask->bSelected = false;
+	ExportTask->bReplaceIdentical = true;
+	ExportTask->bPrompt = false;
+	ExportTask->bUseFileArchive = false;
+	ExportTask->bWriteEmptyFiles = false;
+	ExportTask->bAutomated = true;
+
+	const bool bSuccess = UExporter::RunAssetExportTask(ExportTask) == 1;
+
+	if (bSuccess)
+	{
+		UE_LOG(LogAudioTrimmer, Log, TEXT("Successfully exported SoundWave to: %s"), *ExportPath);
+		return ExportPath;
+	}
+
+	UE_LOG(LogAudioTrimmer, Warning, TEXT("Failed to export SoundWave to: %s"), *ExportPath);
+	return FString();
+}
+
+// Reimports an audio file into the original sound wave asset in Unreal Engine
+bool UAudioTrimmerUtilsLibrary::ReimportAudioToUnreal(USoundWave* OriginalSoundWave, const FString& TrimmedAudioFilePath)
+{
+	if (!OriginalSoundWave)
+	{
+		UE_LOG(LogAudioTrimmer, Warning, TEXT("Original SoundWave is null."));
+		return false;
+	}
+
+	if (!FPaths::FileExists(TrimmedAudioFilePath))
+	{
+		UE_LOG(LogAudioTrimmer, Warning, TEXT("Trimmed audio file does not exist: %s"), *TrimmedAudioFilePath);
+		return false;
+	}
+
+	// Update the reimport path
+	TArray<FString> Filenames;
+	Filenames.Add(TrimmedAudioFilePath);
+	FReimportManager::Instance()->UpdateReimportPaths(OriginalSoundWave, Filenames);
+
+	// Reimport the asset
+	const bool bReimportSuccess = FReimportManager::Instance()->Reimport(OriginalSoundWave, false, false);
+	if (!bReimportSuccess)
+	{
+		UE_LOG(LogAudioTrimmer, Error, TEXT("Failed to reimport asset: %s"), *OriginalSoundWave->GetName());
+		return false;
+	}
+
+	UE_LOG(LogAudioTrimmer, Log, TEXT("Successfully reimported asset: %s with new source: %s"), *OriginalSoundWave->GetName(), *TrimmedAudioFilePath);
+	return true;
+}
+
+// Resets the start frame offset of an audio section to zero
+void UAudioTrimmerUtilsLibrary::ResetStartFrameOffset(UMovieSceneAudioSection* AudioSection)
+{
+	if (!AudioSection)
+	{
+		UE_LOG(LogAudioTrimmer, Warning, TEXT("Invalid AudioSection."));
+		return;
+	}
+
+	// Reset the start frame offset to zero
+	AudioSection->SetStartOffset(0);
+	AudioSection->MarkAsChanged();
+
+	// Mark the movie scene as modified
+	const UMovieScene* MovieScene = AudioSection->GetTypedOuter<UMovieScene>();
+	if (MovieScene)
+	{
+		MovieScene->MarkPackageDirty();
+	}
+
+	// Log the operation
+	UE_LOG(LogAudioTrimmer, Log, TEXT("Reset Start Frame Offset for section using sound: %s"), *AudioSection->GetSound()->GetName());
+}
+
+// Deletes a temporary WAV file from the file system
+bool UAudioTrimmerUtilsLibrary::DeleteTempWavFile(const FString& FilePath)
+{
+	if (FPaths::FileExists(FilePath))
+	{
+		if (IFileManager::Get().Delete(*FilePath))
+		{
+			UE_LOG(LogAudioTrimmer, Log, TEXT("Successfully deleted temporary file: %s"), *FilePath);
+			return true;
+		}
+
+		UE_LOG(LogAudioTrimmer, Warning, TEXT("Failed to delete temporary file: %s"), *FilePath);
+		return false;
+	}
+	return true; // File doesn't exist, so consider it successfully "deleted"
+}
