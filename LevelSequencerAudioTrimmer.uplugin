@@ -1,0 +1,25 @@
+﻿{
+	"FileVersion": 3,
+	"Version": 1,
+	"VersionName": "1.0",
+	"FriendlyName": "Level Sequencer Audio Trimmer",
+	"Description": "Provides one-click trimming and reimporting of all audio assets in a level sequencer",
+	"Category": "Programming",
+	"CreatedBy": "Yevhenii Selivanov",
+	"CreatedByURL": "https://github.com/JanSeliv/LevelSequencerAudioTrimmer",
+	"DocsURL": "",
+	"MarketplaceURL": "",
+	"SupportURL": "mailto:janseliw@gmail.com",
+	"EngineVersion": "5.4.0",
+	"CanContainContent": false,
+	"IsBetaVersion": false,
+	"IsExperimentalVersion": false,
+	"Installed": false,
+	"Modules": [
+		{
+			"Name": "LevelSequencerAudioTrimmerEd",
+			"Type": "Editor",
+			"LoadingPhase": "Default"
+		}
+	]
+}
