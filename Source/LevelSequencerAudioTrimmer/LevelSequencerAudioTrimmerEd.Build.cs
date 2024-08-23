@@ -25,6 +25,16 @@ public class LevelSequencerAudioTrimmerEd : ModuleRules
 				, "MovieScene"
 				, "LevelSequence"
 				, "UnrealEd" // FReimportManager
+				, "ToolMenus"
+			}
+		); 
+
+		// @TODO Remove once Python script execution is completely rewritten to C++ 
+		PrivateDependencyModuleNames.AddRange(
+			new[]
+			{
+				"Projects" // FindPlugin
+				, "PythonScriptPlugin" // FPythonScriptPlugin
 			}
 		);
 	}
