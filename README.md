@@ -2,6 +2,14 @@
 
 **AudioTrimmerUtilsLibrary** is a utility plugin designed to simplify the process of trimming and managing audio assets within Unreal Engine. With this plugin, you can easily trim all audio sections in a level sequence with a single click, streamlining your workflow and optimizing sound resources in your projects.
 
+## Usage
+
+1. Right-click on the desired Level Sequence asset in the Content Browser.
+2. Select `Level Sequencer Audio Trimmer` from the context menu.
+3. The action will be executed and all audio in the Level Sequence will be trimmed.
+
+![ContextMenu](https://github.com/user-attachments/assets/116b4a7f-6d19-4354-9013-0dfc3c8f6358)
+
 ## Features
 
 - **One-Click Trimming**: Trim all audio sections in a level sequence with a single click, significantly speeding up the audio optimization process.
@@ -18,14 +26,3 @@
 3. Go to `Edit > Plugins`, find the **AudioTrimmerUtilsLibrary** plugin, and enable it.
 4. Restart your Unreal Engine project.
 
-## Usage
-
-### Trimming All Audio Sections in a Level Sequence
-
-To trim all audio sections in a level sequence:
-
-1. Ensure your level sequence is correctly set up with audio sections.
-2. Open `Output Window` in Unreal Engine
-3. In `cmd` line, execute `audio_reimporter.py ` script with argument as reference to the Level Sequence:
-   ```bash
-   py "YourUnrealProject/Plugins/AudioTrimmerUtilsLibrary/Python/audio_reimporter.py" "/Game/Path/To/Your/LevelSequence"

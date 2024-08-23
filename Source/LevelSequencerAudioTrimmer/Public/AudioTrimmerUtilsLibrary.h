@@ -16,7 +16,7 @@ DEFINE_LOG_CATEGORY_STATIC(LogAudioTrimmer, Log, All);
  * Utility library for handling audio trimming and reimporting in Unreal Engine.
  */
 UCLASS()
-class UAudioTrimmerUtilsLibrary : public UBlueprintFunctionLibrary
+class LEVELSEQUENCERAUDIOTRIMMERED_API UAudioTrimmerUtilsLibrary : public UBlueprintFunctionLibrary
 {
 	GENERATED_BODY()
 

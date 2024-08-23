@@ -3,11 +3,12 @@
 #pragma once
 
 #include "Modules/ModuleInterface.h"
+//---
+#include "LevelSequencerAudioTrimmer.h"
 
 class FLevelSequencerAudioTrimmerEdModule : public IModuleInterface
 {
 public:
-
 	/**
 	 * Called right after the module DLL has been loaded and the module object has been created.
 	 * Load dependent modules here, and they will be guaranteed to be available during ShutdownModule.
@@ -21,4 +22,14 @@ public:
 	* can safely reference those dependencies in ShutdownModule() as well.
 	*/
 	virtual void ShutdownModule() override;
+
+	/** Registers the custom context menu item for Level Sequence assets. */
+	void RegisterMenus();
+
+	/** Is called when Audio Trimmer button in clicked in the context menu of the Level Sequence asset. */
+	void OnLevelSequencerAudioTrimmerClicked();
+
+protected:
+	/** Audio trimmer instance */
+	FLevelSequencerAudioTrimmer AudioTrimmer;
 };
