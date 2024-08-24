@@ -1,6 +1,6 @@
 # AudioTrimmerUtilsLibrary
 
-**AudioTrimmerUtilsLibrary** is a utility plugin designed to simplify the process of trimming and managing audio assets within Unreal Engine. With this plugin, you can easily trim all audio sections in a level sequence with a single click, streamlining your workflow and optimizing sound resources in your projects.
+**AudioTrimmerUtilsLibrary** is a utility plugin for Windows, MacOS and Linux that is designed to automatically trim and reimport all audio assets in a level sequence with a single click, streamlining your workflow and optimizing sound resources in your projects.
 
 ## Usage
 
