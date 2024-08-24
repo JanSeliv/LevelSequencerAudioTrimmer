@@ -5,8 +5,6 @@
 #include "Modules/ModuleInterface.h"
 //---
 #include "CoreMinimal.h"
-//---
-#include "LevelSequencerAudioTrimmer.h"
 
 class LEVELSEQUENCERAUDIOTRIMMERED_API FLevelSequencerAudioTrimmerEdModule : public IModuleInterface
 {
@@ -30,10 +28,6 @@ public:
 
 	/** Is called when Audio Trimmer button in clicked in the context menu of the Level Sequence asset. */
 	void OnLevelSequencerAudioTrimmerClicked();
-
-protected:
-	/** Audio trimmer instance */
-	FLevelSequencerAudioTrimmer AudioTrimmer;
 
 	/*********************************************************************************************
 	 * Plugin name/path
