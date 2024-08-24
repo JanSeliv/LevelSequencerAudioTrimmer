@@ -1,6 +1,6 @@
-# AudioTrimmerUtilsLibrary
+# Level Sequencer Audio Trimmer
 
-**AudioTrimmerUtilsLibrary** is a utility plugin for Windows, MacOS and Linux that is designed to automatically trim and reimport all audio assets in a level sequence with a single click, streamlining your workflow and optimizing sound resources in your projects.
+**Level Sequencer Audio Trimmer** is a utility plugin for Windows, MacOS and Linux that is designed to automatically trim and reimport all audio assets in a level sequence with a single click, streamlining your workflow and optimizing sound resources in your projects.
 
 ## Usage
 
@@ -14,10 +14,8 @@
 
 - **One-Click Trimming**: Trim all audio sections in a level sequence with a single click, significantly speeding up the audio optimization process.
 - **Trim Time Calculation**: Automatically calculate the start and end times for trimming audio sections based on their usage in the level sequence.
-- **WAV Export**: Export sound waves to WAV files for external processing.
 - **Audio Reimport**: Reimport trimmed audio files back into Unreal Engine, updating the original sound wave assets.
 - **Reset Audio Offsets**: Automatically reset the start frame offsets for audio sections after reimporting, ensuring proper synchronization.
-- **Temporary File Management**: Automatically delete temporary WAV files after they have been processed, keeping your project clean and organized.
 
 ## Installation
 
@@ -25,4 +23,3 @@
 2. Open your Unreal Engine project.
 3. Go to `Edit > Plugins`, find the **AudioTrimmerUtilsLibrary** plugin, and enable it.
 4. Restart your Unreal Engine project.
-
