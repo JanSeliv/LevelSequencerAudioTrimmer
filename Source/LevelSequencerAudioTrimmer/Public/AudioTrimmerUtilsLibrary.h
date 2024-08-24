@@ -35,6 +35,15 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Audio Reimporter")
 	static void CalculateTrimTimes(ULevelSequence* LevelSequence, UMovieSceneAudioSection* AudioSection, int32& StartTimeMs, int32& EndTimeMs);
 
+	/** Trims an audio file to the specified start and end times.
+	 * @param InputPath The file path to the audio file to trim.
+	 * @param OutputPath The file path to save the trimmed audio file.
+	 * @param StartTimeSec The start time in seconds to trim from.
+	 * @param EndTimeSec The end time in seconds to trim to.
+	 * @return True if the audio was successfully trimmed, false otherwise. */
+	UFUNCTION(BlueprintCallable, Category = "Audio Reimporter")
+	static bool TrimAudio(const FString& InputPath, const FString& OutputPath, float StartTimeSec, float EndTimeSec);
+
 	/** Exports a sound wave to a WAV file.
 	 * @param SoundWave The sound wave to export.
 	 * @return The file path to the exported WAV file. */

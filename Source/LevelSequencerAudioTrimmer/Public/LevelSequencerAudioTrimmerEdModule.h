@@ -4,9 +4,11 @@
 
 #include "Modules/ModuleInterface.h"
 //---
+#include "CoreMinimal.h"
+//---
 #include "LevelSequencerAudioTrimmer.h"
 
-class FLevelSequencerAudioTrimmerEdModule : public IModuleInterface
+class LEVELSEQUENCERAUDIOTRIMMERED_API FLevelSequencerAudioTrimmerEdModule : public IModuleInterface
 {
 public:
 	/**
@@ -32,4 +34,34 @@ public:
 protected:
 	/** Audio trimmer instance */
 	FLevelSequencerAudioTrimmer AudioTrimmer;
+
+	/*********************************************************************************************
+	 * Plugin name/path
+	 ********************************************************************************************* */
+public:
+	inline static const FString PluginName = TEXT("LevelSequencerAudioTrimmer");
+
+	/** Returns the full path to this plugin. */
+	static const FString& GetPluginPath() { return PluginPath; }
+
+protected:
+	/** Sets this plugin full path. */
+	void InitPluginPath();
+
+	/** Current full path to this plugin. */
+	static FString PluginPath;
+
+	/*********************************************************************************************
+	 * FFMPEG
+	 ********************************************************************************************* */
+public:
+	/** Returns the full path to the FFMPEG library stored in this plugin. */
+	static const FString& GetFfmpegPath() { return FfmpegPath; }
+
+protected:
+	/** Sets FFMPEG path depending on the platform. */
+	void InitFfmpegPath();
+
+	/** Current path to the FFMPEG library. */
+	static FString FfmpegPath;
 };

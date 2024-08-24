@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Yevhenii Selivanov
 
 using UnrealBuildTool;
+using System.IO;
 
 public class LevelSequencerAudioTrimmerEd : ModuleRules
 {
@@ -37,5 +38,16 @@ public class LevelSequencerAudioTrimmerEd : ModuleRules
 				, "PythonScriptPlugin" // FPythonScriptPlugin
 			}
 		);
+
+		// Adding FFMPEG ThirdParty dependency
+        var FFMPEGPath = Path.Combine(ModuleDirectory, "..", "ThirdParty", "ffmpeg");
+        if (Target.Platform == UnrealTargetPlatform.Win64)
+        {
+            RuntimeDependencies.Add(Path.Combine(FFMPEGPath, "Windows", "ffmpeg.exe"));
+        }
+        else if (Target.Platform == UnrealTargetPlatform.Mac || Target.Platform == UnrealTargetPlatform.Linux)
+        {
+            RuntimeDependencies.Add(Path.Combine(FFMPEGPath, "Linux", "ffmpeg"));
+        }
 	}
 }

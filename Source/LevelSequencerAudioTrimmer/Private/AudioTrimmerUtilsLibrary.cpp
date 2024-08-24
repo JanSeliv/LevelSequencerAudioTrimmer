@@ -5,6 +5,7 @@
 #include "AssetExportTask.h"
 #include "AssetToolsModule.h"
 #include "LevelSequence.h"
+#include "LevelSequencerAudioTrimmerEdModule.h"
 #include "MovieScene.h"
 #include "MovieSceneTrack.h"
 #include "ObjectTools.h"
@@ -117,6 +118,33 @@ void UAudioTrimmerUtilsLibrary::CalculateTrimTimes(ULevelSequence* LevelSequence
 	}
 }
 
+// Trims an audio file to the specified start and end times
+bool UAudioTrimmerUtilsLibrary::TrimAudio(const FString& InputPath, const FString& OutputPath, float StartTimeSec, float EndTimeSec)
+{
+	int32 ReturnCode;
+	FString Output;
+	FString Errors;
+	
+	const FString& FfmpegPath = FLevelSequencerAudioTrimmerEdModule::GetFfmpegPath();
+	const FString CommandLineArgs = FString::Printf(TEXT("-i \"%s\" -ss %.2f -to %.2f -c copy \"%s\" -y"), *InputPath, StartTimeSec, EndTimeSec, *OutputPath);
+
+	// Execute the ffmpeg process
+	FPlatformProcess::ExecProcess(*FfmpegPath, *CommandLineArgs, &ReturnCode, &Output, &Errors);
+
+	if (ReturnCode != 0)
+	{
+		UE_LOG(LogAudioTrimmer, Warning, TEXT("FFMPEG failed to trim audio. Error: %s"), *Errors);
+		return false;
+	}
+
+	const float PrevSizeMB = IFileManager::Get().FileSize(*InputPath) / (1024.f * 1024.f);
+	const float NewSizeMB = IFileManager::Get().FileSize(*OutputPath) / (1024.f * 1024.f);
+
+	UE_LOG(LogAudioTrimmer, Log, TEXT("Trimmed audio stats: Previous Size: %.2f MB, New Size: %.2f MB"), PrevSizeMB, NewSizeMB);
+
+	return true;
+}
+
 // Exports a sound wave to a WAV file
 FString UAudioTrimmerUtilsLibrary::ExportSoundWaveToWav(USoundWave* SoundWave)
 {
@@ -126,14 +154,10 @@ FString UAudioTrimmerUtilsLibrary::ExportSoundWaveToWav(USoundWave* SoundWave)
 		return FString();
 	}
 
-	// Get the directory where the original sound wave is stored
-	const FString AssetPath = SoundWave->GetPathName();
-	const FString PackagePath = FPackageName::ObjectPathToPackageName(AssetPath);
-	FString Directory = FPaths::GetPath(PackagePath);
-
-	// Construct the full export path
-	FString FileName = SoundWave->GetName() + TEXT(".wav");
-	FString ExportPath = FPaths::Combine(FPaths::ProjectContentDir(), Directory, FileName);
+	const FString PackagePath = SoundWave->GetPathName();
+	const FString RelativePath = FPackageName::LongPackageNameToFilename(PackagePath, TEXT(""));
+	const FString FullPath = FPaths::ChangeExtension(RelativePath, TEXT("wav"));
+	const FString ExportPath = FPaths::ConvertRelativePathToFull(FullPath);
 
 	// Export the sound wave to the WAV file
 	UAssetExportTask* ExportTask = NewObject<UAssetExportTask>();

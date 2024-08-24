@@ -2,17 +2,27 @@
 
 #include "LevelSequencerAudioTrimmerEdModule.h"
 //---
+#include "Editor.h"
 #include "LevelSequence.h"
 #include "ToolMenus.h"
+#include "Interfaces/IPluginManager.h"
 #include "Modules/ModuleManager.h"
-#include "Editor.h"
 
 IMPLEMENT_MODULE(FLevelSequencerAudioTrimmerEdModule, LevelSequencerAudioTrimmer)
+
+// Current path to the plugin
+FString FLevelSequencerAudioTrimmerEdModule::PluginPath = TEXT("");
+
+// Current path to the FFMPEG library 
+FString FLevelSequencerAudioTrimmerEdModule::FfmpegPath = TEXT("");
 
 // Called right after the module DLL has been loaded and the module object has been created
 void FLevelSequencerAudioTrimmerEdModule::StartupModule()
 {
 	UToolMenus::RegisterStartupCallback(FSimpleMulticastDelegate::FDelegate::CreateRaw(this, &FLevelSequencerAudioTrimmerEdModule::RegisterMenus));
+
+	InitPluginPath();
+	InitFfmpegPath();
 }
 
 // Called before the module is unloaded, right before the module object is destroyed
@@ -53,4 +63,39 @@ void FLevelSequencerAudioTrimmerEdModule::OnLevelSequencerAudioTrimmerClicked()
 			AudioTrimmer.ProcessLevelSequence(*LevelSequenceIt);
 		}
 	}
+}
+
+/*********************************************************************************************
+ * Plugin name/path
+ ********************************************************************************************* */
+
+// Current path to this plugin
+void FLevelSequencerAudioTrimmerEdModule::InitPluginPath()
+{
+	const IPlugin* PluginPtr = IPluginManager::Get().FindPlugin(PluginName).Get();
+	checkf(PluginPtr, TEXT("ERROR: [%i] %hs:\n'PluginPtr' is null!"), __LINE__, __FUNCTION__);
+	const FString RelativePluginPath = PluginPtr->GetBaseDir();
+	PluginPath = FPaths::ConvertRelativePathToFull(RelativePluginPath);
+}
+
+/*********************************************************************************************
+ * FFMPEG
+ ********************************************************************************************* */
+
+// Sets FFMPEG path depending on the platform
+void FLevelSequencerAudioTrimmerEdModule::InitFfmpegPath()
+{
+	checkf(!PluginPath.IsEmpty(), TEXT("ERROR: [%i] %hs:\n'PluginPath' is empty!"), __LINE__, __FUNCTION__);
+
+	FString RelativePath;
+#if PLATFORM_WINDOWS
+	static const FString WinPath = TEXT("ThirdParty/ffmpeg/Windows/ffmpeg.exe");
+	RelativePath = FPaths::Combine(PluginPath, WinPath);
+#elif PLATFORM_LINUX || PLATFORM_MAC
+	static const FString LinuxPath = TEXT("ThirdParty/ffmpeg/Linux/ffmpeg");
+	RelativePath = FPaths::Combine(PluginPath, LinuxPath);
+#endif
+
+	// Convert the relative path to an absolute path
+	FfmpegPath = FPaths::ConvertRelativePathToFull(RelativePath);
 }
