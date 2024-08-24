@@ -91,7 +91,10 @@ void FLevelSequencerAudioTrimmerEdModule::InitFfmpegPath()
 #if PLATFORM_WINDOWS
 	static const FString WinPath = TEXT("ThirdParty/ffmpeg/Windows/ffmpeg.exe");
 	RelativePath = FPaths::Combine(PluginPath, WinPath);
-#elif PLATFORM_LINUX || PLATFORM_MAC
+#elif PLATFORM_MAC
+	static const FString MacPath = TEXT("ThirdParty/ffmpeg/Mac/ffmpeg");
+	RelativePath = FPaths::Combine(PluginPath, MacPath);
+#elif PLATFORM_LINUX
 	static const FString LinuxPath = TEXT("ThirdParty/ffmpeg/Linux/ffmpeg");
 	RelativePath = FPaths::Combine(PluginPath, LinuxPath);
 #endif

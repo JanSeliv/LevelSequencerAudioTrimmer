@@ -45,7 +45,11 @@ public class LevelSequencerAudioTrimmerEd : ModuleRules
         {
             RuntimeDependencies.Add(Path.Combine(FFMPEGPath, "Windows", "ffmpeg.exe"));
         }
-        else if (Target.Platform == UnrealTargetPlatform.Mac || Target.Platform == UnrealTargetPlatform.Linux)
+        else if (Target.Platform == UnrealTargetPlatform.Mac)
+		{
+			RuntimeDependencies.Add(Path.Combine(FFMPEGPath, "Mac", "ffmpeg"));
+		}
+        else if (Target.Platform == UnrealTargetPlatform.Linux)
         {
             RuntimeDependencies.Add(Path.Combine(FFMPEGPath, "Linux", "ffmpeg"));
         }
