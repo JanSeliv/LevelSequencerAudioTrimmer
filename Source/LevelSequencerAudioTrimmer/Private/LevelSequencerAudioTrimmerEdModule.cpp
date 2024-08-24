@@ -2,6 +2,8 @@
 
 #include "LevelSequencerAudioTrimmerEdModule.h"
 //---
+#include "AudioTrimmerUtilsLibrary.h"
+//---
 #include "Editor.h"
 #include "LevelSequence.h"
 #include "ToolMenus.h"
@@ -60,7 +62,7 @@ void FLevelSequencerAudioTrimmerEdModule::OnLevelSequencerAudioTrimmerClicked()
 	{
 		if (const ULevelSequence* LevelSequenceIt = Cast<ULevelSequence>(AssetData.GetAsset()))
 		{
-			AudioTrimmer.ProcessLevelSequence(*LevelSequenceIt);
+			UAudioTrimmerUtilsLibrary::RunLevelSequenceAudioTrimmer(LevelSequenceIt);
 		}
 	}
 }
