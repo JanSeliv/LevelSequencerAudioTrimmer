@@ -1,6 +1,30 @@
-# Level Sequencer Audio Trimmer
+<a href="https://github.com/JanSeliv/LevelSequencerAudioTrimmer/blob/main/LICENSE">![License](https://img.shields.io/badge/license-MIT-brightgreen.svg)</a>
+<a href="https://www.unrealengine.com/">![Unreal Engine](https://img.shields.io/badge/Unreal-5.4-dea309?style=flat&logo=unrealengine)</a>
+
+<br/>
+<p align="center">
+<a href="https://github.com/JanSeliv/LevelSequencerAudioTrimmer">
+<img src="https://github.com/JanSeliv/LevelSequencerAudioTrimmer/blob/main/Resources/Icon128.png?raw=true" alt="Logo" width="80" height="80">
+</a>
+<h3 align="center">Level Sequencer Audio Trimmer</h3>
+<p align="center">
+Trim and reimport audio assets with one click
+<br/>
+<br/>
+<a href="https://discord.gg/jbWgwDefnE"><strong>Join our Discord ››</strong></a>
+<br/>
+<a href="https://github.com/JanSeliv/LevelSequencerAudioTrimmer/releases">Releases</a>
+·
+<a href="https://github.com/JanSeliv/LevelSequencerAudioTrimmer">Docs</a>
+</p>
+
+## 🌟 About
 
 **Level Sequencer Audio Trimmer** is a utility plugin for Windows, MacOS and Linux that is designed to automatically trim and reimport all audio assets in a level sequence with a single click, streamlining your workflow and optimizing sound resources in your projects.
+
+## 📅 Changelog
+#### 2024-08-23
+- 🎉 Initial public release on Unreal Engine 5.4
 
 ## Usage
 
